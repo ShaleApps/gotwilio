@@ -13,6 +13,7 @@ import (
 // See http://www.twilio.com/docs/api/rest/making-calls for more info.
 type CallbackParameters struct {
 	Url                                string   // Required
+	Twiml                              string   // Optional
 	Method                             string   // Optional
 	FallbackUrl                        string   // Optional
 	FallbackMethod                     string   // Optional
@@ -93,6 +94,10 @@ func NewCallbackParameters(url string) *CallbackParameters {
 	return &CallbackParameters{Url: url, Timeout: 60}
 }
 
+func NewCallbackParametersFromTwiml(twiml string) *CallbackParameters {
+	return &CallbackParameters{Twiml: twiml, Timeout: 60}
+}
+
 // GetCall uses Twilio to get information about a voice call.
 // See https://www.twilio.com/docs/voice/api/call
 func (twilio *Twilio) GetCall(sid string) (*VoiceResponse, *Exception, error) {
@@ -126,8 +131,12 @@ func (twilio *Twilio) CallWithUrlCallbacks(from, to string, callbackParameters *
 	formValues := url.Values{}
 	formValues.Set("From", from)
 	formValues.Set("To", to)
-	formValues.Set("Url", callbackParameters.Url)
-
+	if callbackParameters.Twiml != "" {
+		formValues.Set("Twiml", callbackParameters.Twiml)
+	}
+	if callbackParameters.Url != "" {
+		formValues.Set("Url", callbackParameters.Url)
+	}
 	// Optional values
 	if callbackParameters.Method != "" {
 		formValues.Set("Method", callbackParameters.Method)
